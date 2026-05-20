@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,6 +27,26 @@
         align-items: center;
       }
 
+      .group-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        height: 100%;
+      }
+
+      .group-title {
+        color: #333;
+        display: flex;
+        height: 100%;
+        gap: 0.2rem;
+      }
+
+      .group-title-line {
+        display: block;
+        width: 5px;
+        background-color: #005ae2;
+      }
+
       .wrapper {
         width: 100%;
         height: 100vh;
@@ -37,7 +57,7 @@
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 1.8rem;
       }
 
       .group {
@@ -157,28 +177,49 @@
 
           if (groups) {
             app.innerHTML = `
-	      <br />
-	      <a href="https://docs.google.com/spreadsheets/d/1MeRCBWAjysPcPHay7RpvhKzrGGtIXmB-qNDTGAn_Cxk/edit?gid=0#gid=0" target="_blank">edit data cuy</a>
+              <div style="height: 8px"></div>
+              <a href="https://docs.google.com/spreadsheets/d/1MeRCBWAjysPcPHay7RpvhKzrGGtIXmB-qNDTGAn_Cxk/edit?gid=0#gid=0" target="_blank">👉 Edit data disini cuy 👈</a>
               <div class="wrapper">
                 <div class="container">
                   ${groups
-                    .map(
-                      (group) => `
-                        <div class="group">
-                          ${group
-                            .map(
-                              (data) => {
+                    .map((group) => {
+                      const titleCriteria = "title=";
+
+                      function isTitle(text) {
+                        return text?.startsWith(titleCriteria);
+                      }
+
+                      return `
+                        <div class=group-wrapper>
+                          ${
+                            isTitle(group[0]?.title)
+                              ? `
+                                <div class="group-title">
+                                  <span class="group-title-line" style="background-color: ${group[0]?.bgcolor}"></span>
+                                  <h4 style="font-size: ${group[0]?.fontsize}">${group[0]?.title?.replace(titleCriteria, "")}</h4>
+                                </div>      
+                              `
+                              : ""
+                          }
+
+                          <div class="group">
+                            ${group
+                              .map((data, index) => {
+                                if (index === 0 && isTitle(data?.title)) {
+                                  return;
+                                }
+
                                 return `
                                   <button data-copy="${data.datacopy}" style="font-size: ${data.fontsize}; background-color: ${data.bgcolor}">
                                     ${data.title}
                                   </button>
-                                `
-                              }
-                            )
-                            .join("")}
+                                `;
+                              })
+                              .join("")}
+                          </div>  
                         </div>
-                      `
-                    )
+                      `;
+                    })
                     .join("")}
                 </div>
               </div>
@@ -210,22 +251,15 @@
                 timeouts.push(
                   setTimeout(() => {
                     alert.classList.remove("active");
-                  }, 3000)
+                  }, 3000),
                 );
               });
             });
           } else {
-            throw {
-              statusCode: 500,
-              message: "Ada kesalahan",
-            };
+            throw new Error("Ada kesalahan");
           }
         } catch (error) {
-          if (error.statusCode === 500) {
-            app.innerHTML = "<h2>Internal Server Error</h2>";
-          }
-
-          app.innerHTML = "<h2>GAGAL MENGAMBIL DATA 😢</h2>";
+          app.innerHTML = `<h2>Error: ${error?.message || "Internal Error!"} 😂</h2>`;
         }
       })();
 
